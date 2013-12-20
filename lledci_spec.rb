@@ -38,7 +38,11 @@ describe 'Limitless LED CI' do
         "ref" => "refs/head/production",
         "repository" => {"name" => "repo_name", "url" => "ssh://git@github.com/organization_name/repo_name", "org_name" => "organization_name"},
         "xid" => "372da4f69"
-       }
+       }.to_json
+    end
+
+    def webhook(options)
+      post '/tddium', payload(options), { "CONTENT_TYPE" => "application/json" }
     end
 
     let(:mock_bridge) { mock(:mock_bridge, :color => true ) }
@@ -50,8 +54,7 @@ describe 'Limitless LED CI' do
 
       it 'changes the LED color to green when the build passes' do
         mock_bridge.should_receive(:color).with(85)
-
-        post '/tddium', payload(status: 'passed')
+        webhook(status: 'passed')
         last_response.status.should == 200
         last_response.body.should == 'Build passed!'
       end
@@ -59,13 +62,13 @@ describe 'Limitless LED CI' do
       it 'changes the LED color to red when the build fails' do
         mock_bridge.should_receive(:color).with(170)
 
-        post '/tddium', payload(status: 'failed')
+        webhook(status: 'failed')
         last_response.status.should == 200
         last_response.body.should == 'Build failed!'
       end
 
       it 'raises an exception when the payload is unknown' do
-        post '/tddium', payload(status: 'hippopotamus')
+        webhook(status: 'hippopotamus')
         last_response.status.should == 500
         last_response.body.should include('Unknown build status: hippopotamus ')
       end
@@ -77,12 +80,12 @@ describe 'Limitless LED CI' do
       end
 
       it 'does nothing unless the branch is master' do
-        post '/tddium', payload(branch: 'other')
+        webhook(branch: 'other')
         last_response.status.should == 200
       end
 
       it 'does nothing unless the event is stop' do
-        post '/tddium', payload(event: 'start')
+        webhook(event: 'start')
         last_response.status.should == 200
       end
 
