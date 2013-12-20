@@ -12,7 +12,7 @@ class LimitlessLedCi < Sinatra::Application
   post '/tddium' do
     params = JSON.parse(request.body.read)
     return unless params['branch'] == 'master' && params['event'] == 'stop'
-    bridge = LimitlessLed::Bridge.new(host: 'lled.hired.local')
+    bridge = LimitlessLed::Bridge.new(host: '172.16.0.7')
 
     case params['status']
       when 'passed'
