@@ -19,24 +19,26 @@ describe 'Limitless LED CI' do
 
   describe '/tddium' do
     def payload(status: 'passed', branch: 'master', event: 'stop')
-      %Q[ {
-        "event":"#{event}",
-        "session":351279,
-        "commit_id":"38d4d2548e85729e138fdba32e08421bb899ba37",
-        "status":"#{status}",
-        "counts":{"notstarted":0,
-        "started":0,
-        "passed":234.0,
-        "failed":0.0,
-        "pending":3.0,
-        "skipped":0.0,
-        "error":0.0},
-        "workers":24,
-        "branch":"#{branch}",
-        "ref":"refs/head/production",
-        "repository":{"name":"repo_name", "url":"ssh://git@github.com/organization_name/repo_name", "org_name":"organization_name"},
-        "xid":"372da4f69"}
-      ]
+       {
+        "event" => event,
+        "session" => 351279,
+        "commit_id" => "38d4d2548e85729e138fdba32e08421bb899ba37",
+        "status" => status,
+        "counts" => {
+          "notstarted" => 0,
+          "started" => 0,
+          "passed" => 234.0,
+          "failed" => 0.0,
+          "pending" => 3.0,
+          "skipped" => 0.0,
+          "error" => 0.0
+        },
+        "workers" => 24,
+        "branch" => branch,
+        "ref" => "refs/head/production",
+        "repository" => {"name" => "repo_name", "url" => "ssh://git@github.com/organization_name/repo_name", "org_name" => "organization_name"},
+        "xid" => "372da4f69"
+       }
     end
 
     let(:mock_bridge) { mock(:mock_bridge, :color => true ) }
