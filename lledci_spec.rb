@@ -67,6 +67,14 @@ describe 'Limitless LED CI' do
         last_response.body.should == 'Build failed!'
       end
 
+      it 'changes the LED color to yellow when the build errors' do
+        mock_bridge.should_receive(:color).with('Yellow')
+
+        webhook(status: 'error')
+        last_response.status.should == 200
+        last_response.body.should == 'Build error!'
+      end
+
       it 'raises an exception when the payload is unknown' do
         webhook(status: 'hippopotamus')
         last_response.status.should == 500

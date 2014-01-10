@@ -15,6 +15,8 @@ class LimitlessLedCi < Sinatra::Application
     bridge = LimitlessLed::Bridge.new(host: '172.16.0.7')
 
     case params['status']
+      when 'error'
+        bridge.color 'Yellow'
       when 'passed'
         bridge.color 85
       when 'failed'
