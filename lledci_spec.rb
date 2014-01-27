@@ -4,6 +4,7 @@ Bundler.require
 require './lledci'
 require 'rspec'
 require 'rack/test'
+require 'webmock/rspec'
 
 describe 'Limitless LED CI' do
   include Rack::Test::Methods
@@ -45,7 +46,8 @@ describe 'Limitless LED CI' do
       post '/tddium', payload(options), { "CONTENT_TYPE" => "application/json" }
     end
 
-    let(:mock_bridge) { mock(:mock_bridge, :color => true ) }
+    let(:mock_light) { mock(:mock_light, color: true)}
+    let(:mock_bridge) { mock(:mock_bridge, group: mock_light ) }
 
     context 'when branch is master and event is "stop"' do
       before do
@@ -53,14 +55,15 @@ describe 'Limitless LED CI' do
       end
 
       it 'changes the LED color to green when the build passes' do
-        mock_bridge.should_receive(:color).with(85)
+        mock_light.should_receive(:color).with('Green')
         webhook(status: 'passed')
+        pp last_response.body
         last_response.status.should == 200
         last_response.body.should == 'Build passed!'
       end
 
       it 'changes the LED color to red when the build fails' do
-        mock_bridge.should_receive(:color).with(170)
+        mock_light.should_receive(:color).with('Red')
 
         webhook(status: 'failed')
         last_response.status.should == 200
@@ -68,7 +71,7 @@ describe 'Limitless LED CI' do
       end
 
       it 'changes the LED color to yellow when the build errors' do
-        mock_bridge.should_receive(:color).with('Yellow')
+        mock_light.should_receive(:color).with('Yellow')
 
         webhook(status: 'error')
         last_response.status.should == 200
@@ -98,6 +101,50 @@ describe 'Limitless LED CI' do
       end
 
     end
+  end
+
+  describe '#get_newrelic_apdex' do
+    it 'makes a request to NewRelic using the NewRelic API' do
+      stub = stub_request(:get, "https://api.newrelic.com/api/v1/accounts/#{LimitlessLedCi::NEWRELIC_ACCOUNT_ID}/applications/#{LimitlessLedCi::NEWRELIC_APP_ID}/threshold_values.json")
+        .to_return(status: 200, body: "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<threshold-values type=\"array\">\n  <threshold_value name=\"Apdex\" metric_value=\"0.86\" threshold_value=\"2\" begin_time=\"2014-01-27 18:51:23\" end_time=\"2014-01-27 18:54:23\" formatted_metric_value=\"0.86 [0.5]\"/>\n  <threshold_value name=\"Application Busy\" metric_value=\"7.2\" threshold_value=\"1\" begin_time=\"2014-01-27 18:51:23\" end_time=\"2014-01-27 18:54:23\" formatted_metric_value=\"7.2%\"/>\n  <threshold_value name=\"Error Rate\" metric_value=\"0.151\" threshold_value=\"1\" begin_time=\"2014-01-27 18:51:23\" end_time=\"2014-01-27 18:54:23\" formatted_metric_value=\"0.151%\"/>\n  <threshold_value name=\"Throughput\" metric_value=\"136\" threshold_value=\"1\" begin_time=\"2014-01-27 18:51:23\" end_time=\"2014-01-27 18:54:23\" formatted_metric_value=\"136 rpm\"/>\n  <threshold_value name=\"Errors\" metric_value=\"0.667\" threshold_value=\"1\" begin_time=\"2014-01-27 18:51:23\" end_time=\"2014-01-27 18:54:23\" formatted_metric_value=\"0.667 epm\"/>\n  <threshold_value name=\"Response Time\" metric_value=\"500\" threshold_value=\"1\" begin_time=\"2014-01-27 18:51:23\" end_time=\"2014-01-27 18:54:23\" formatted_metric_value=\"500 ms\"/>\n  <threshold_value name=\"DB\" metric_value=\"27.1\" threshold_value=\"1\" begin_time=\"2014-01-27 18:51:23\" end_time=\"2014-01-27 18:54:23\" formatted_metric_value=\"27.1%\"/>\n  <threshold_value name=\"CPU\" metric_value=\"55.1\" threshold_value=\"1\" begin_time=\"2014-01-27 18:51:23\" end_time=\"2014-01-27 18:54:23\" formatted_metric_value=\"55.1%\"/>\n  <threshold_value name=\"Memory\" metric_value=\"3400\" threshold_value=\"1\" begin_time=\"2014-01-27 18:51:23\" end_time=\"2014-01-27 18:54:23\" formatted_metric_value=\"3,400 MB\"/>\n</threshold-values>\n")
+
+      app.new.helpers.get_newrelic_apdex.should == 0.86
+      stub.should have_been_requested
+    end
+  end
+
+  describe '#apdex_to_color_code' do
+
+    it 'returns full Green for 1.0' do
+      app.new.helpers.apdex_to_color_code(1.0).should == 85
+    end
+
+    it 'returns mostly green for 0.95' do
+      app.new.helpers.apdex_to_color_code(0.95).should == 101
+    end
+
+    it 'returns mostly green for 0.85' do
+      app.new.helpers.apdex_to_color_code(0.85).should == 128
+    end
+
+    it 'returns mostly green for 0.75' do
+      app.new.helpers.apdex_to_color_code(0.75).should == 148
+    end
+
+    it 'returns mostly green for 0.6' do
+      app.new.helpers.apdex_to_color_code(0.6).should == 166
+    end
+
+    it 'returns full Red for any value less than 0.5' do
+      app.new.helpers.apdex_to_color_code(0.5).should == 170
+      app.new.helpers.apdex_to_color_code(0.49).should == 170
+      app.new.helpers.apdex_to_color_code(0.1).should == 170
+    end
+  end
+
+  describe '#update_apdex_indicator' do
+
+
   end
 
 end
