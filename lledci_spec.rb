@@ -46,7 +46,7 @@ describe 'Limitless LED CI' do
       post '/tddium', payload(options), { "CONTENT_TYPE" => "application/json" }
     end
 
-    let(:mock_light) { mock(:mock_light, color: true)}
+    let(:mock_light) { mock(:mock_light, color: true, brightness: true)}
     let(:mock_bridge) { mock(:mock_bridge, group: mock_light ) }
 
     context 'when branch is master and event is "stop"' do

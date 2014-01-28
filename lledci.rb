@@ -20,6 +20,8 @@ class LimitlessLedCi < Sinatra::Application
 
     bridge = LimitlessLed::Bridge.new(host: '172.16.0.7')
     light = bridge.group(1)
+    light.brightness 10
+    sleep 0.2
     case params['status']
       when 'error'
         light.color 'Yellow'
@@ -30,7 +32,8 @@ class LimitlessLedCi < Sinatra::Application
       else
         raise "Unknown build status: #{params['status']}"
     end
-
+    sleep 0.2
+    light.brightness 27
     "Build #{params['status']}!"
   end
 
@@ -61,9 +64,9 @@ class LimitlessLedCi < Sinatra::Application
       puts apdex: apdex
       light = bridge.group(2)
       light.brightness  10
-      sleep 0.15
+      sleep 0.2
       light.color       helpers.apdex_to_color_code(apdex)
-      sleep 0.1
+      sleep 0.2
       light.brightness  27
       sleep 120
     end
