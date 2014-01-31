@@ -57,7 +57,6 @@ describe 'Limitless LED CI' do
       it 'changes the LED color to green when the build passes' do
         mock_light.should_receive(:color).with('Green')
         webhook(status: 'passed')
-        pp last_response.body
         last_response.status.should == 200
         last_response.body.should == 'Build passed!'
       end

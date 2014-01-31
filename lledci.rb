@@ -4,9 +4,9 @@ require 'crack'
 
 class LimitlessLedCi < Sinatra::Application
 
-  NEWRELIC_API_KEY = '311a19178c2d6782788545bf3e1b584e5eeca999de19cdc'
-  NEWRELIC_ACCOUNT_ID = 252235
-  NEWRELIC_APP_ID = 1350161
+  NEWRELIC_API_KEY    = ENV['NEWRELIC_API_KEY']
+  NEWRELIC_ACCOUNT_ID = ENV['NEWRELIC_ACCOUNT_ID']
+  NEWRELIC_APP_ID     = ENV['NEWRELIC_APP_ID']
 
   set :protection, origin_whitelist: ['chrome-extension://hgmloofddffdnphfgcellkdfbfbjeloo']
 
