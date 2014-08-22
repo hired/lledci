@@ -13,6 +13,10 @@ describe 'Limitless LED CI' do
     LimitlessLedCi
   end
 
+  before do
+    app.any_instance.stub(:sleep)
+  end
+
   it 'says hi' do
     get '/'
     last_response.body.should == 'Limitless LED CI'
