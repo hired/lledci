@@ -7,6 +7,7 @@ class LimitlessLedCi < Sinatra::Application
   NEWRELIC_API_KEY    = ENV['NEWRELIC_API_KEY']
   NEWRELIC_ACCOUNT_ID = ENV['NEWRELIC_ACCOUNT_ID']
   NEWRELIC_APP_ID     = ENV['NEWRELIC_APP_ID']
+  LLED_BRIDGE_IP      = ENV['LLED_BRIDGE_IP']
 
   set :protection, origin_whitelist: ['chrome-extension://hgmloofddffdnphfgcellkdfbfbjeloo']
 
@@ -18,7 +19,7 @@ class LimitlessLedCi < Sinatra::Application
     params = JSON.parse(request.body.read)
     return unless params['branch'] == 'master' && params['event'] == 'stop'
 
-    bridge = LimitlessLed::Bridge.new(host: '172.16.0.7')
+    bridge = LimitlessLed::Bridge.new(host: LLED_BRIDGE_IP)
     light = bridge.group(1)
     light.brightness 10
     sleep 0.2
@@ -56,7 +57,7 @@ class LimitlessLedCi < Sinatra::Application
 
   Thread.abort_on_exception = true
   Thread.new do
-    bridge = LimitlessLed::Bridge.new(host: '172.16.0.7')
+    bridge = LimitlessLed::Bridge.new(host: LLED_BRIDGE_IP)
     while true do
       puts 'checking now'
       helpers = self.new.helpers
