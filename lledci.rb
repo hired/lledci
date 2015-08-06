@@ -18,6 +18,7 @@ class LimitlessLedCi < Sinatra::Application
   post '/tddium' do
     params = JSON.parse(request.body.read)
     return unless params['branch'] == 'master' && params['event'] == 'stop'
+    return unless params['repository']['name'] == 'hired'
 
     bridge = LimitlessLed::Bridge.new(host: LLED_BRIDGE_IP)
     light = bridge.group(1)
